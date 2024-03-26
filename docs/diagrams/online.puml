@@ -1,0 +1,6 @@
+@startuml Online API
+:User: --> [CLI] : keeper --online -login <login>
+[CLI] --> (GetJWT)
+(GetJWT) --> (JWTStore)
+(JWTStore) --> (GetJWT)
+@enduml

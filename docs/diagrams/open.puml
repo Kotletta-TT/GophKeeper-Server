@@ -1,0 +1,74 @@
+@startuml Online Auth
+!theme blueprint
+title Online Auth
+actor User
+participant Client
+database JWTStore
+boundary UserInfoEntrypoint
+boundary RefreshTokenEntrypoint
+boundary AuthEntrypoint
+control RecreateRefreshToken
+control Auth
+participant CreateTokens
+database Database
+
+User o-> Client : keeper --online -login <login>
+Client -> JWTStore : GetJWT
+alt exist jwt
+    Client <-- JWTStore : <jwt>
+    Client -> UserInfoEntrypoint : GetUserInfo <jwt>
+    alt valid jwt
+        Client <-- UserInfoEntrypoint : <UserInfo>
+    else no valid jwt
+        Client <-- UserInfoEntrypoint : 401 Unauthorized
+        Client -> JWTStore : GetRefresh
+        alt exist refresh
+            Client <-- JWTStore : <ref token>
+            Client -> RefreshTokenEntrypoint : <ref token>
+            RefreshTokenEntrypoint -> RecreateRefreshToken : <ref token>
+            RecreateRefreshToken -> Database : GetUserByToken <ref token>
+            alt exist refresh in db
+                RecreateRefreshToken <-- Database : <User>
+                RecreateRefreshToken -> Database : UpdateTokenPair <User>
+            else no exist refresh in db
+                RecreateRefreshToken <-- Database : <Nil>
+                RefreshTokenEntrypoint <-- RecreateRefreshToken : <err>
+                Client <-- RecreateRefreshToken : 401
+                User <-- Client : "Auth failed, please re-enter using login and password"
+                User <-- Client : "Enter login: "
+                User -> Client : <login>
+                User <-- Client : "Enter password: "
+                User -> Client : <password>
+                Client -> AuthEntrypoint : <login> <password>
+                AuthEntrypoint -> Auth : <login> <password>
+                Auth -> Database : GetUser <login>
+                alt exist user
+                    Auth <-- Database : <User>
+                    Auth -> Auth : ValidPassowrd <password> <User.password>
+                    alt correct password
+                        Auth -> CreateTokens : <User>
+                        Auth <-- CreateTokens : <jwt> <refresh>
+                        AuthEntrypoint <-- Auth : <jwt> <refresh>
+                        Client <-- AuthEntrypoint : 200 <jwt> <refresh>
+                        Client -> JWTStore : <jwt> <refresh>
+                        
+                    else incorrect password :
+                    end
+                else non exist user
+                end
+AuthEntrypoint -> 
+RecreateRefreshToken -> Database : UpdateToken <ref token>
+alt update success
+else update failed
+end
+RecreateRefreshToken <-- Database : 
+else no exist refresh
+end
+end
+else no exist jwt
+Client <-- JWTStore : <nil>
+end
+User <-- Client: "Enter Password: "
+User -> Client: <password>
+Client -> OnlineAuth: 
+@enduml

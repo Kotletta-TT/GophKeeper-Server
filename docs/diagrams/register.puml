@@ -1,0 +1,79 @@
+@startuml Registration
+!theme blueprint
+title Registration
+actor User
+participant Client
+boundary CheckRegisterEntrypoint
+control RegisterChecker
+entity Settings
+boundary RegisterEntrypoint
+participant LoginValidator
+participant PasswordValidator
+control RegisterUser
+entity Users
+database Database
+autonumber
+User o-> Client : keeper --register <host>
+Client -> CheckRegisterEntrypoint : CheckRegisterRequest
+CheckRegisterEntrypoint -> RegisterChecker : CheckRegisterPosibility
+RegisterChecker -> Settings : GetNewRegister
+alt #Green successful case
+RegisterChecker <-[#white]- Settings : <color #white>True</color>
+CheckRegisterEntrypoint <-[#white]- RegisterChecker : <color #white>True</color>
+Client <-[#white]- CheckRegisterEntrypoint : <color #white>200 OK</color>
+User <-[#white]- Client : <color #white>"Please enter your login: "</color>
+else #Red failed case
+autonumber 5
+RegisterChecker <-[#white]- Settings : <color #white>False</color>
+CheckRegisterEntrypoint <-[#white]- RegisterChecker : <color #white>False</color>
+Client <-[#white]- CheckRegisterEntrypoint : <color #white>403 Forbidden</color>
+User o<-[#white]- Client : <color #white>"Registration is not possible. Exit"</color>
+end
+|||
+User -> Client : <login> Enter
+Client -> User : "Please enter your password: "
+User -> Client : <password> Enter
+Client -> RegisterEntrypoint : PasswordLoginRegisterRequest <login><password>
+RegisterEntrypoint -> LoginValidator : <login>
+alt #Green successful case
+RegisterEntrypoint <-- LoginValidator: <nil>
+else #Red failed case
+autonumber 14
+RegisterEntrypoint <-- LoginValidator: <Err>
+Client <-- RegisterEntrypoint: 401 Bad Request json{err: <Err>}
+User o<-- Client : <Err>
+end
+autonumber 15
+RegisterEntrypoint -> PasswordValidator : <password>
+alt #Green successful case
+RegisterEntrypoint <-- PasswordValidator: <nil>
+else #Red failed case
+autonumber 16
+RegisterEntrypoint <-- PasswordValidator: <Err>
+Client <-- RegisterEntrypoint: 401 Bad Request json{err: <Err>}
+User o<-- Client : <Err>
+end
+autonumber 17
+RegisterEntrypoint -> RegisterUser : NewRegisterUser <login> <password>
+RegisterUser -> Users : NewUser <login> <password>
+RegisterUser <-- Users : <User>
+RegisterUser -> Database : AddUser <User>
+alt #Green successful case
+RegisterUser <-- Database : <nil>
+RegisterEntrypoint <-- RegisterUser : <nil>
+Client <-- RegisterEntrypoint : 201 Created
+User o<-- Client : "User created"
+else #Orange exist case
+autonumber 21
+RegisterUser <-- Database : <User>
+RegisterEntrypoint <-- RegisterUser : <Err>
+Client <-- RegisterEntrypoint : 409 Conflict json{err: "User already exist"}
+User o<-- Client : "User already exist"
+else #Red err case
+autonumber 21
+RegisterUser <-- Database : <Err>
+RegisterEntrypoint <-- RegisterUser : <Err>
+Client <-- RegisterEntrypoint : 500 Internal Server Error json{err: <Err>}
+User o<-- Client : "Server unavailable"
+end
+@enduml
