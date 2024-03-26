@@ -1,4 +1,12 @@
-listen: ":8866"
-transport: "grpc" # http
-db: "in-memory" # postgres
+transport:
+  grpc: # http
+    listen: ":8866"
+storage:
+  in-memory: # postgres
+    filepath: "/tmp/test.db"
+log:
+  level: "info"
+  format: "json"
+  # output: "stdout"
+  # filepath: "/tmp/test.log"
 registration: true # false

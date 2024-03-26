@@ -1,12 +1,13 @@
 package app
 
 import (
+	"GophKeeper-Server/config"
 	"context"
 	"fmt"
 	"time"
 )
 
-func Run(ctx context.Context) error {
+func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	for {
 		select {
 		case <-ctx.Done():
