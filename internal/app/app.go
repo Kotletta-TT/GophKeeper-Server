@@ -2,8 +2,8 @@ package app
 
 import (
 	"GophKeeper-Server/config"
+	"GophKeeper-Server/logger"
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -13,7 +13,7 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			fmt.Println("hello")
+			l.Info("Hello, World!")
 			time.Sleep(time.Second * 1)
 		}
 	}
