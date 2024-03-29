@@ -7,6 +7,7 @@ import (
 	"GophKeeper-Server/logger"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -113,13 +114,46 @@ func TestRegisterUC_Register(t *testing.T) {
 			if tt.wantErr {
 				var ce *customErrs.CustomErrors
 				if errors.As(err, &ce) {
-					t.Log(ce.Code)
 					assert.Equal(t, tt.codeErr, ce.Code)
 				} else {
 					assert.Error(t, err)
 				}
 			} else {
 				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNewRegisterUC(t *testing.T) {
+	type args struct {
+		l logger.Logger
+		r RegisterRepository
+		h HashFunc
+	}
+	tests := []struct {
+		name string
+		args args
+		want *RegisterUC
+	}{
+		{
+			name: "nil args",
+			args: args{
+				l: nil,
+				r: nil,
+				h: nil,
+			},
+			want: &RegisterUC{
+				l: nil,
+				r: nil,
+				h: nil,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewRegisterUC(tt.args.l, tt.args.r, tt.args.h); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewRegisterUC() = %v, want %v", got, tt.want)
 			}
 		})
 	}
