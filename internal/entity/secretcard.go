@@ -1,6 +1,10 @@
 package entity
 
+import "github.com/google/uuid"
+
 type SecretCard struct {
+	ID       uuid.UUID
+	UserId   uuid.UUID
 	Name     string
 	URL      string
 	Login    string
