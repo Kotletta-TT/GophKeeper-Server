@@ -3,6 +3,7 @@ package secretcard
 import (
 	"GophKeeper-Server/config"
 	"GophKeeper-Server/logger"
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ type MockDeleteRepository struct {
 	mock.Mock
 }
 
-func (m *MockDeleteRepository) DeleteSecretCard(secretId uuid.UUID) error {
+func (m *MockDeleteRepository) DeleteSecretCard(ctx context.Context, secretId uuid.UUID) error {
 	args := m.Called(secretId)
 	return args.Error(0)
 }
@@ -54,7 +55,7 @@ func TestDeleteUC_DeleteSecret(t *testing.T) {
 				r.On("DeleteSecretCard", tt.args.secretId).Return(nil)
 			}
 			uc := NewDeleteUC(l, r)
-			err := uc.DeleteSecret(tt.args.secretId)
+			err := uc.DeleteSecret(context.Background(), tt.args.secretId)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

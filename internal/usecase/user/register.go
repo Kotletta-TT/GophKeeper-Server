@@ -4,16 +4,17 @@ import (
 	"GophKeeper-Server/internal/entity"
 	customErr "GophKeeper-Server/internal/errors"
 	"GophKeeper-Server/logger"
+	"context"
 	"fmt"
 )
 
 type Register interface {
-	Register(login, password string) error
+	Register(ctx context.Context, login, password string) error
 }
 
 type RegisterRepository interface {
-	GetUser(login string) (*entity.User, error)
-	Register(login, password string) error
+	GetUser(ctx context.Context, login string) (*entity.User, error)
+	CreateUser(ctx context.Context, login, password string) error
 }
 
 type HashFunc func(password string) (string, error)
@@ -28,8 +29,8 @@ func NewRegisterUC(l logger.Logger, r RegisterRepository, h HashFunc) *RegisterU
 	return &RegisterUC{l: l, r: r, h: h}
 }
 
-func (uc *RegisterUC) Register(login, password string) error {
-	usr, err := uc.r.GetUser(login)
+func (uc *RegisterUC) Register(ctx context.Context, login, password string) error {
+	usr, err := uc.r.GetUser(ctx, login)
 	if err != nil {
 		uc.l.Errorf(
 			fmt.Sprintf(
@@ -53,7 +54,7 @@ func (uc *RegisterUC) Register(login, password string) error {
 			))
 		return customErr.ErrDatabaseInternal(err)
 	}
-	if err := uc.r.Register(login, hashPass); err != nil {
+	if err := uc.r.CreateUser(ctx, login, hashPass); err != nil {
 		uc.l.Errorf(
 			fmt.Sprintf(
 				"repository Register err: %s login: %s",

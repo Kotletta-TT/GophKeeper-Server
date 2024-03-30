@@ -4,6 +4,7 @@ import (
 	"GophKeeper-Server/config"
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ type MockListRepository struct {
 	mock.Mock
 }
 
-func (m *MockListRepository) ListSecretCardByUserId(userId uuid.UUID) ([]*entity.SecretCard, error) {
+func (m *MockListRepository) ListSecretCardByUserId(ctx context.Context, userId uuid.UUID) ([]*entity.SecretCard, error) {
 	args := m.Called(userId)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -23,7 +24,7 @@ func (m *MockListRepository) ListSecretCardByUserId(userId uuid.UUID) ([]*entity
 	return args.Get(0).([]*entity.SecretCard), args.Error(1)
 }
 
-func (m *MockListRepository) ListSecretCardByName(name string) ([]*entity.SecretCard, error) {
+func (m *MockListRepository) ListSecretCardByName(ctx context.Context, name string) ([]*entity.SecretCard, error) {
 	args := m.Called(name)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -69,7 +70,7 @@ func TestListUC_ListSecretByUserId(t *testing.T) {
 				r.On("ListSecretCardByUserId", tt.args.userId).Return(tt.want, nil)
 			}
 			uc := NewListUC(l, r)
-			data, err := uc.ListSecretByUserId(tt.args.userId)
+			data, err := uc.ListSecretByUserId(context.Background(), tt.args.userId)
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, data)
@@ -119,7 +120,7 @@ func TestListUC_ListSecretByName(t *testing.T) {
 				r.On("ListSecretCardByName", tt.args.name).Return(tt.want, nil)
 			}
 			uc := NewListUC(l, r)
-			data, err := uc.ListSecretByName(tt.args.name)
+			data, err := uc.ListSecretByName(context.Background(), tt.args.name)
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, data)

@@ -5,6 +5,7 @@ import (
 	"GophKeeper-Server/internal/entity"
 	customErrs "GophKeeper-Server/internal/errors"
 	"GophKeeper-Server/logger"
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -18,12 +19,12 @@ type MockRegisterRepository struct {
 	mock.Mock
 }
 
-func (m *MockRegisterRepository) Register(login, password string) error {
+func (m *MockRegisterRepository) CreateUser(ctx context.Context, login, password string) error {
 	args := m.Called(login, password)
 	return args.Error(0)
 }
 
-func (m *MockRegisterRepository) GetUser(login string) (*entity.User, error) {
+func (m *MockRegisterRepository) GetUser(ctx context.Context, login string) (*entity.User, error) {
 	args := m.Called(login)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -108,9 +109,9 @@ func TestRegisterUC_Register(t *testing.T) {
 			r := new(MockRegisterRepository)
 			uc := NewRegisterUC(tt.fields.l, r, tt.fields.h)
 			r.On("GetUser", tt.args.login).Return(tt.args.returnUser, tt.args.dbErr)
-			r.On("Register", tt.args.login, tt.args.password).Return(tt.args.dbErr)
+			r.On("CreateUser", tt.args.login, tt.args.password).Return(tt.args.dbErr)
 
-			err := uc.Register(tt.args.login, tt.args.password)
+			err := uc.Register(context.Background(), tt.args.login, tt.args.password)
 			if tt.wantErr {
 				var ce *customErrs.CustomErrors
 				if errors.As(err, &ce) {

@@ -2,17 +2,18 @@ package secretcard
 
 import (
 	"GophKeeper-Server/logger"
+	"context"
 	"fmt"
 
 	"github.com/google/uuid"
 )
 
 type Delete interface {
-	DeleteSecret(secretId uuid.UUID) error
+	DeleteSecret(ctx context.Context, secretId uuid.UUID) error
 }
 
 type DeleteRepository interface {
-	DeleteSecretCard(secretId uuid.UUID) error
+	DeleteSecretCard(ctx context.Context, secretId uuid.UUID) error
 }
 
 type DeleteUC struct {
@@ -24,8 +25,8 @@ func NewDeleteUC(l logger.Logger, repo DeleteRepository) *DeleteUC {
 	return &DeleteUC{l, repo}
 }
 
-func (uc *DeleteUC) DeleteSecret(secretId uuid.UUID) error {
-	err := uc.repo.DeleteSecretCard(secretId)
+func (uc *DeleteUC) DeleteSecret(ctx context.Context, secretId uuid.UUID) error {
+	err := uc.repo.DeleteSecretCard(ctx, secretId)
 	if err != nil {
 		uc.l.Error(
 			fmt.Sprintf("failed to delete secret %s err: %s",

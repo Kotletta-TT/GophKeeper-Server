@@ -3,19 +3,20 @@ package secretcard
 import (
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"fmt"
 
 	"github.com/google/uuid"
 )
 
 type List interface {
-	ListSecretByName(secretName string) ([]*entity.SecretCard, error)
-	ListSecretByUserId(userId uuid.UUID) ([]*entity.SecretCard, error)
+	ListSecretByName(ctx context.Context, secretName string) ([]*entity.SecretCard, error)
+	ListSecretByUserId(ctx context.Context, userId uuid.UUID) ([]*entity.SecretCard, error)
 }
 
 type ListRepository interface {
-	ListSecretCardByName(secretName string) ([]*entity.SecretCard, error)
-	ListSecretCardByUserId(userId uuid.UUID) ([]*entity.SecretCard, error)
+	ListSecretCardByName(ctx context.Context, secretName string) ([]*entity.SecretCard, error)
+	ListSecretCardByUserId(ctx context.Context, userId uuid.UUID) ([]*entity.SecretCard, error)
 }
 
 type ListUC struct {
@@ -27,8 +28,8 @@ func NewListUC(l logger.Logger, r ListRepository) *ListUC {
 	return &ListUC{l: l, r: r}
 }
 
-func (uc *ListUC) ListSecretByName(secretName string) ([]*entity.SecretCard, error) {
-	cards, err := uc.r.ListSecretCardByName(secretName)
+func (uc *ListUC) ListSecretByName(ctx context.Context, secretName string) ([]*entity.SecretCard, error) {
+	cards, err := uc.r.ListSecretCardByName(ctx, secretName)
 	if err != nil {
 		uc.l.Error(
 			fmt.Sprintf("get list secret card by name %s err: %s",
@@ -40,8 +41,8 @@ func (uc *ListUC) ListSecretByName(secretName string) ([]*entity.SecretCard, err
 	return cards, err
 }
 
-func (uc *ListUC) ListSecretByUserId(userId uuid.UUID) ([]*entity.SecretCard, error) {
-	cards, err := uc.r.ListSecretCardByUserId(userId)
+func (uc *ListUC) ListSecretByUserId(ctx context.Context, userId uuid.UUID) ([]*entity.SecretCard, error) {
+	cards, err := uc.r.ListSecretCardByUserId(ctx, userId)
 	if err != nil {
 		uc.l.Error(
 			fmt.Sprintf("get list secret card by user id %s err: %s",

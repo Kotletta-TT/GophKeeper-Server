@@ -4,6 +4,7 @@ import (
 	"GophKeeper-Server/config"
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ type MockReadRepository struct {
 	mock.Mock
 }
 
-func (m *MockReadRepository) GetSecretCardByID(secretId uuid.UUID) (*entity.SecretCard, error) {
+func (m *MockReadRepository) GetSecretCardByID(ctx context.Context, secretId uuid.UUID) (*entity.SecretCard, error) {
 	args := m.Called(secretId)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -71,7 +72,7 @@ func TestReadUC_ReadSecret(t *testing.T) {
 				r.On("GetSecretCardByID", tt.args.secretId).Return(tt.want, nil)
 			}
 			uc := NewReadUC(l, r)
-			dbCard, err := uc.ReadSecret(tt.args.secretId)
+			dbCard, err := uc.ReadSecret(context.Background(), tt.args.secretId)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

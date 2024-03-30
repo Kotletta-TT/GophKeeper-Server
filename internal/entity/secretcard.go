@@ -1,17 +1,22 @@
 package entity
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type SecretCard struct {
-	ID       uuid.UUID
-	UserId   uuid.UUID
-	Name     string
-	URL      string
-	Login    string
-	Password string
-	Text     string
-	Files    map[string]string
-	Meta     map[string]string
+	ID         uuid.UUID
+	UserId     uuid.UUID
+	Name       string
+	URL        string
+	Login      string
+	Password   string
+	Text       string
+	Files      map[string]string
+	Meta       map[string]string
+	UpdateTime time.Time
 }
 
 // type JSONSecretCard struct {

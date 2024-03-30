@@ -3,15 +3,16 @@ package secretcard
 import (
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"fmt"
 )
 
 type Add interface {
-	AddSecret(card *entity.SecretCard) error
+	AddSecret(ctx context.Context, card *entity.SecretCard) error
 }
 
 type AddRepository interface {
-	StoreSecretCard(card *entity.SecretCard) error
+	CreateSecretCard(ctx context.Context, card *entity.SecretCard) error
 }
 
 type AddUC struct {
@@ -23,8 +24,8 @@ func NewAddUC(l logger.Logger, r AddRepository) *AddUC {
 	return &AddUC{l: l, r: r}
 }
 
-func (uc *AddUC) AddSecret(card *entity.SecretCard) error {
-	err := uc.r.StoreSecretCard(card)
+func (uc *AddUC) AddSecret(ctx context.Context, card *entity.SecretCard) error {
+	err := uc.r.CreateSecretCard(ctx, card)
 	if err != nil {
 		uc.l.Errorf(
 			fmt.Sprintf(

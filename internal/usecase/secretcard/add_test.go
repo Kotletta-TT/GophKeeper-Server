@@ -4,6 +4,7 @@ import (
 	"GophKeeper-Server/config"
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ type MockAddRepository struct {
 	mock.Mock
 }
 
-func (m *MockAddRepository) StoreSecretCard(card *entity.SecretCard) error {
+func (m *MockAddRepository) CreateSecretCard(ctx context.Context, card *entity.SecretCard) error {
 	args := m.Called(card)
 	return args.Error(0)
 }
@@ -57,26 +58,17 @@ func TestAddUC_AddSecret(t *testing.T) {
 	if err != nil {
 		assert.Error(t, err)
 	}
-	type fields struct {
-		l logger.Logger
-		r AddRepository
-	}
 	type args struct {
 		card *entity.SecretCard
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 		err     error
 	}{
 		{
 			name: "Add secret card",
-			fields: fields{
-				l: l,
-				r: &MockAddRepository{},
-			},
 			args: args{
 				card: &entity.SecretCard{},
 			},
@@ -85,10 +77,6 @@ func TestAddUC_AddSecret(t *testing.T) {
 		},
 		{
 			name: "Add secret card error",
-			fields: fields{
-				l: l,
-				r: &MockAddRepository{},
-			},
 			args: args{
 				card: &entity.SecretCard{},
 			},
@@ -98,15 +86,13 @@ func TestAddUC_AddSecret(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := &AddUC{
-				l: tt.fields.l,
-				r: tt.fields.r,
-			}
-			uc.r.(*MockAddRepository).On("StoreSecretCard", tt.args.card).Return(tt.err)
+			r := &MockAddRepository{}
+			uc := NewAddUC(l, r)
+			uc.r.(*MockAddRepository).On("CreateSecretCard", tt.args.card).Return(tt.err)
 			if tt.wantErr {
-				assert.Error(t, uc.AddSecret(tt.args.card))
+				assert.Error(t, uc.AddSecret(context.Background(), tt.args.card))
 			} else {
-				assert.NoError(t, uc.AddSecret(tt.args.card))
+				assert.NoError(t, uc.AddSecret(context.Background(), tt.args.card))
 			}
 		})
 	}

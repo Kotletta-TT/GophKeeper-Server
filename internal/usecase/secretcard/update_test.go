@@ -4,6 +4,7 @@ import (
 	"GophKeeper-Server/config"
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/logger"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ type MockUpdateRepository struct {
 	mock.Mock
 }
 
-func (m *MockUpdateRepository) UpdateSecretCard(card *entity.SecretCard) error {
+func (m *MockUpdateRepository) UpdateSecretCard(ctx context.Context, card *entity.SecretCard) error {
 	args := m.Called(card)
 	return args.Error(0)
 }
@@ -43,7 +44,7 @@ func TestUpdateUC_UpdateSecret(t *testing.T) {
 				r: r,
 			}
 			r.On("UpdateSecretCard", tt.args.card).Return(tt.err)
-			err := uc.UpdateSecret(tt.args.card)
+			err := uc.UpdateSecret(context.Background(), tt.args.card)
 			if tt.wantErr {
 				assert.Equal(t, tt.err, err)
 			} else {
