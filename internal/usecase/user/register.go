@@ -32,37 +32,23 @@ func NewRegisterUC(l logger.Logger, r RegisterRepository, h HashFunc) *RegisterU
 func (uc *RegisterUC) Register(ctx context.Context, login, password string) error {
 	usr, err := uc.r.GetUser(ctx, login)
 	if err != nil {
-		uc.l.Errorf(
-			fmt.Sprintf(
-				"repository GetUser err: %s login: %s",
-				err.Error(),
-				login))
+		uc.l.Error("get user from repository", "error", err, "login", login)
 		return customErr.ErrDatabaseInternal(err)
 	}
 	if usr != nil {
 		err := fmt.Errorf("user %s already exists", login)
-		uc.l.Infof(err.Error())
+		uc.l.Info("register user", "error", err, "login", login)
 		return customErr.ErrAlreadyExists(err)
 	}
 	hashPass, err := uc.h(password)
 	if err != nil {
-		uc.l.Errorf(
-			fmt.Sprintf(
-				"hash password from login: %s err: %s",
-				login,
-				err.Error(),
-			))
+		uc.l.Error("hash password", "error", err, "login", login)
 		return customErr.ErrDatabaseInternal(err)
 	}
 	if err := uc.r.CreateUser(ctx, login, hashPass); err != nil {
-		uc.l.Errorf(
-			fmt.Sprintf(
-				"repository Register err: %s login: %s",
-				err.Error(),
-				login,
-			))
+		uc.l.Error("create user", "error", err, "login", login)
 		return customErr.ErrDatabaseInternal(err)
 	}
-	uc.l.Infof("user %s created!", login)
+	uc.l.Info("user created", "login", login)
 	return nil
 }

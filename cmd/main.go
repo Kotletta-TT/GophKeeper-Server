@@ -23,7 +23,7 @@ func main() {
 	defer cancel()
 	g, _ := errgroup.WithContext(ctx)
 	g.Go(func() error { return app.Run(ctx, cfg, logger) })
-	logger.Errorf(g.Wait().Error())
+	logger.Error(g.Wait().Error())
 }
 
 func Initialize() (*config.Config, l.Logger, error) {

@@ -5,6 +5,7 @@ go 1.22.0
 require golang.org/x/sync v0.6.0
 
 require (
+	github.com/doug-martin/goqu/v9 v9.19.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
@@ -21,6 +22,7 @@ require (
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/doug-martin/goqu v5.0.0+incompatible
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/pmezard/go-difflib v1.0.0 // indirect

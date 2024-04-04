@@ -7,12 +7,9 @@ import (
 )
 
 type Logger interface {
-	Error(msg any)
-	Errorf(msg string, args ...interface{})
-	Info(msg any)
-	Infof(msg string, args ...interface{})
-	Debug(msg any)
-	Debugf(msg string, args ...interface{})
+	Error(msg string, args ...any)
+	Info(msg string, args ...any)
+	Debug(msg string, args ...any)
 }
 
 func NewLogger(cfg *config.Config) (Logger, error) {
@@ -26,27 +23,15 @@ type Slogger struct {
 	l *slog.Logger
 }
 
-func (s *Slogger) Error(msg any) {
-	s.l.Error(msg.(string))
-}
-
-func (s *Slogger) Errorf(msg string, args ...interface{}) {
+func (s *Slogger) Error(msg string, args ...any) {
 	s.l.Error(msg, args...)
 }
 
-func (s *Slogger) Info(msg any) {
-	s.l.Info(msg.(string))
-}
-
-func (s *Slogger) Infof(msg string, args ...interface{}) {
+func (s *Slogger) Info(msg string, args ...any) {
 	s.l.Info(msg, args...)
 }
 
-func (s *Slogger) Debug(msg any) {
-	s.l.Debug(msg.(string))
-}
-
-func (s *Slogger) Debugf(msg string, args ...interface{}) {
+func (s *Slogger) Debug(msg string, args ...any) {
 	s.l.Debug(msg, args...)
 }
 

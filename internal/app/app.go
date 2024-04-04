@@ -21,7 +21,10 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	if err != nil {
 		return err
 	}
-	pg.Pool.Exec(ctx, "CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY, login text, password text)")
+	_, err = pg.Pool.Exec(ctx, "CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY, login text, password text)")
+	if err != nil {
+		return err
+	}
 	ur := repouser.NewUserRepositroy(pg)
 	uc := user.NewRegisterUC(l, ur, utils.HashPassword)
 	go func() {

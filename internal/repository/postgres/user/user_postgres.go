@@ -4,6 +4,9 @@ import (
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/pkg/postgres"
 	"context"
+	"fmt"
+
+	"github.com/Masterminds/squirrel"
 )
 
 type UserRepositroy struct {
@@ -15,11 +18,11 @@ func NewUserRepositroy(pg *postgres.Postgres) *UserRepositroy {
 }
 
 func (u *UserRepositroy) GetUser(ctx context.Context, login string) (*entity.User, error) {
-	sql, _, err := u.Builder.Select("id", "login", "password").From("users").Where("login = ?", login).ToSql()
+	sql, _, err := u.Builder.Select("id, login, password").From("users").Where(squirrel.Eq{"login": login}).ToSql()
 	if err != nil {
 		return nil, err
 	}
-	row := u.Pool.QueryRow(ctx, sql)
+	row := u.Pool.QueryRow(ctx, sql, login)
 	usr := &entity.User{}
 	err = row.Scan(&usr.ID, &usr.Login, &usr.Password)
 	if err != nil {
@@ -33,7 +36,7 @@ func (u *UserRepositroy) CreateUser(ctx context.Context, login, password string)
 	if err != nil {
 		return err
 	}
-	_, err = u.Pool.Exec(ctx, sql)
+	_, err = u.Pool.Exec(ctx, sql, login, password)
 	if err != nil {
 		return err
 	}
