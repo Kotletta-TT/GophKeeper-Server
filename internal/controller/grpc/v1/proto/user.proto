@@ -4,18 +4,14 @@ package v1;
 
 option go_package = "v1/proto";
 
-message User {
+
+message UserResponse {
     string id = 1;
     string login = 2;
-    string password = 3;
-}
-
-message UserList {
-    repeated User users = 1;
 }
 
 message GetUserResponse {
-    User user = 1;
+    UserResponse user = 1;
 }
 
 message CreateUserResponse {
@@ -23,14 +19,22 @@ message CreateUserResponse {
 }
 
 message UserRequest {
-    string id = 1;
-}
-
-message CreateUserRequest {
     string login = 1;
     string password = 2;
 }
 
+message UserUpdatePasswordRequest {
+    string login = 1;
+    string oldPassword = 2;
+    string newPassword = 3;
+}
+
+message UpdatePasswordResponse {
+    string error = 1;
+}
+
 service UserService {
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc CreateUser(UserRequest) returns (CreateUserResponse);
+    rpc GetUser(UserRequest) returns (GetUserResponse);
+    rpc UpdatePassword(UserUpdatePasswordRequest) returns (UpdatePasswordResponse);
 }

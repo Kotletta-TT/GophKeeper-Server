@@ -4,180 +4,131 @@ import (
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/pkg/postgres"
 	"context"
+	"database/sql"
+	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 )
 
-type SecretCardRepositroy struct {
+type SecretCardRepository struct {
 	*postgres.Postgres
 }
 
-func NewSecretCardRepositroy(pg *postgres.Postgres) *SecretCardRepositroy {
-	return &SecretCardRepositroy{pg}
+func NewSecretCardRepository(pg *postgres.Postgres) *SecretCardRepository {
+	return &SecretCardRepository{pg}
 }
 
-func (s *SecretCardRepositroy) AddSecretCard(ctx context.Context, card *entity.SecretCard) error {
-	sql, _, err := s.Builder.Insert("secret_cards").Columns("user_id", "name", "url", "login", "password", "text", "meta", "file", "update_time").
-		Values(card.UserId, card.Name, card.URL, card.Login, card.Password, card.Text, card.Meta, card.Files, card.UpdateTime).
+func (r *SecretCardRepository) CreateSecretCard(ctx context.Context, card *entity.SecretCard) error {
+	query, args, err := r.Builder.Insert("secret_cards").
+		Columns("id", "user_id", "name", "url", "login", "password", "text", "update_time").
+		Values(card.ID, card.UserId, card.Name, card.URL, card.Login, card.Password, card.Text, card.UpdateTime).ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to generate SQL query: %w", err)
+	}
+	_, err = r.Pool.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to create secret card: %w", err)
+	}
+	return nil
+}
+
+// ReadSecretCard retrieves a secret card from the repository by ID.
+func (r *SecretCardRepository) ReadSecretCard(ctx context.Context, id uuid.UUID) (*entity.SecretCard, error) {
+	var card entity.SecretCard
+
+	query, args, err := r.Builder.Select("id", "user_id", "name", "url", "login", "password", "text", "update_time").
+		From("secret_cards").
+		Where(squirrel.Eq{"id": id}).
+		Limit(1).
 		ToSql()
-	if err != nil {
-		return err
-	}
-	_, err = s.Pool.Exec(ctx, sql)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
-func (s *SecretCardRepositroy) UpdateSecretCard(ctx context.Context, card *entity.SecretCard) error {
-	sql, _, err := s.Builder.Update("secret_cards").SetMap(map[string]interface{}{
-		"name":        card.Name,
-		"url":         card.URL,
-		"login":       card.Login,
-		"password":    card.Password,
-		"text":        card.Text,
-		"meta":        card.Meta,
-		"file":        card.Files,
-		"update_time": card.UpdateTime,
-	}).Where("id = ?", card.ID).ToSql()
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to generate SQL query: %w", err)
 	}
-	_, err = s.Pool.Exec(ctx, sql)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
-func (s *SecretCardRepositroy) GetSecretCard(ctx context.Context, id uuid.UUID) (*entity.SecretCard, error) {
-	sql, _, err := s.Builder.Select(
-		"id",
-		"user_id",
-		"name",
-		"url",
-		"login",
-		"password",
-		"text",
-		"meta",
-		"file",
-		"update_time").From("secret_cards").Where("id = ?", id).ToSql()
+	row := r.Pool.QueryRow(ctx, query, args...)
+	err = row.Scan(&card.ID, &card.UserId, &card.Name, &card.URL, &card.Login, &card.Password, &card.Text, &card.UpdateTime)
 	if err != nil {
-		return nil, err
-	}
-	row := s.Pool.QueryRow(ctx, sql)
-	secretCard := &entity.SecretCard{}
-	err = row.Scan(
-		&secretCard.ID,
-		&secretCard.UserId,
-		&secretCard.Name,
-		&secretCard.URL,
-		&secretCard.Login,
-		&secretCard.Password,
-		&secretCard.Text,
-		&secretCard.Meta,
-		&secretCard.Files,
-		&secretCard.UpdateTime,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return secretCard, nil
-}
-
-func (s *SecretCardRepositroy) DeleteSecretCard(ctx context.Context, id uuid.UUID) error {
-	sql, _, err := s.Builder.Delete("secret_cards").Where("id = ?", id).ToSql()
-	if err != nil {
-		return err
-	}
-	_, err = s.Pool.Exec(ctx, sql)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *SecretCardRepositroy) GetSecretCards(ctx context.Context, userId uuid.UUID) ([]*entity.SecretCard, error) {
-	sql, _, err := s.Builder.Select(
-		"id",
-		"user_id",
-		"name",
-		"url",
-		"login",
-		"password",
-		"text",
-		"meta",
-		"file",
-		"update_time").From("secret_cards").Where("user_id = ?", userId).ToSql()
-	if err != nil {
-		return nil, err
-	}
-	rows, err := s.Pool.Query(ctx, sql)
-	if err != nil {
-		return nil, err
-	}
-	var secretCards []*entity.SecretCard
-	for rows.Next() {
-		secretCard := &entity.SecretCard{}
-		err = rows.Scan(
-			&secretCard.ID,
-			&secretCard.UserId,
-			&secretCard.Name,
-			&secretCard.URL,
-			&secretCard.Login,
-			&secretCard.Password,
-			&secretCard.Text,
-			&secretCard.Meta,
-			&secretCard.Files,
-			&secretCard.UpdateTime,
-		)
-		if err != nil {
-			return nil, err
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("secret card not found")
 		}
-		secretCards = append(secretCards, secretCard)
+		return nil, fmt.Errorf("failed to read secret card: %w", err)
 	}
-	return secretCards, nil
+
+	return &card, nil
 }
 
-func (s *SecretCardRepositroy) GetSecretCardsByName(ctx context.Context, name string) ([]*entity.SecretCard, error) {
-	sql, _, err := s.Builder.Select(
-		"id",
-		"user_id",
-		"name",
-		"url",
-		"login",
-		"password",
-		"text",
-		"meta",
-		"file",
-		"update_time").From("secret_cards").Where("name = ?", name).ToSql()
+// UpdateSecretCard обновляет существующую секретную карту в репозитории.
+func (r *SecretCardRepository) UpdateSecretCard(ctx context.Context, card *entity.SecretCard) error {
+	query, args, err := r.Builder.Update("secret_cards").
+		Set("user_id", card.UserId).
+		Set("name", card.Name).
+		Set("url", card.URL).
+		Set("login", card.Login).
+		Set("password", card.Password).
+		Set("text", card.Text).
+		Set("update_time", card.UpdateTime).
+		Where(squirrel.Eq{"id": card.ID}).
+		ToSql()
+
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to generate SQL query: %w", err)
 	}
-	rows, err := s.Pool.Query(ctx, sql)
+
+	_, err = r.Pool.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to execute SQL query: %w", err)
 	}
-	var secretcards []*entity.SecretCard
+	return nil
+}
+
+// DeleteSecretCard удаляет секретную карту из репозитория по ID.
+func (r *SecretCardRepository) DeleteSecretCard(ctx context.Context, id uuid.UUID) error {
+	query, args, err := r.Builder.Delete("secret_cards").
+		Where(squirrel.Eq{"id": id}).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("failed to generate SQL query: %w", err)
+	}
+
+	_, err = r.Pool.Exec(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to execute SQL query: %w", err)
+	}
+	return nil
+}
+
+func (r *SecretCardRepository) ListSecretCardsByUserID(ctx context.Context, userID uuid.UUID) ([]entity.SecretCard, error) {
+	var cards []entity.SecretCard
+
+	query, args, err := r.Builder.Select("id", "user_id", "name", "url", "login", "password", "text", "update_time").
+		From("secret_cards").
+		Where(squirrel.Eq{"user_id": userID}).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate SQL query: %w", err)
+	}
+
+	rows, err := r.Pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute SQL query: %w", err)
+	}
+	defer rows.Close()
+
 	for rows.Next() {
-		secretCard := &entity.SecretCard{}
-		err = rows.Scan(
-			&secretCard.ID,
-			&secretCard.UserId,
-			&secretCard.Name,
-			&secretCard.URL,
-			&secretCard.Login,
-			&secretCard.Password,
-			&secretCard.Text,
-			&secretCard.Meta,
-			&secretCard.Files,
-			&secretCard.UpdateTime,
-		)
+		var card entity.SecretCard
+		err := rows.Scan(&card.ID, &card.UserId, &card.Name, &card.URL, &card.Login, &card.Password, &card.Text, &card.UpdateTime)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan secret card: %w", err)
 		}
-		secretcards = append(secretcards, secretCard)
+		cards = append(cards, card)
 	}
-	return secretcards, nil
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during iteration over secret cards rows: %w", err)
+	}
+
+	return cards, nil
 }

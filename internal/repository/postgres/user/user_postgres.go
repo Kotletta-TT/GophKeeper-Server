@@ -4,9 +4,11 @@ import (
 	"GophKeeper-Server/internal/entity"
 	"GophKeeper-Server/pkg/postgres"
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/Masterminds/squirrel"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5"
 )
 
 type UserRepositroy struct {
@@ -18,25 +20,80 @@ func NewUserRepositroy(pg *postgres.Postgres) *UserRepositroy {
 }
 
 func (u *UserRepositroy) GetUser(ctx context.Context, login string) (*entity.User, error) {
-	sql, _, err := u.Builder.Select("id, login, password").From("users").Where(squirrel.Eq{"login": login}).ToSql()
+	user := entity.User{}
+
+	query, args, err := u.Builder.Select("id", "login", "password").From("users").Where(sq.Eq{"login": login}).ToSql()
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+		return &user, err
 	}
-	row := u.Pool.QueryRow(ctx, sql, login)
-	usr := &entity.User{}
-	err = row.Scan(&usr.ID, &usr.Login, &usr.Password)
+
+	row := u.Pool.QueryRow(ctx, query, args...)
+	err = row.Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &user, errors.New("user not found")
+		}
+		return &user, err
 	}
-	return usr, nil
+
+	return &user, nil
+}
+
+func (u *UserRepositroy) GetUserByID(ctx context.Context, id string) (*entity.User, error) {
+	user := entity.User{}
+
+	query, args, err := u.Builder.Select("id", "login", "password").From("users").Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return &user, err
+	}
+	row := u.Pool.QueryRow(ctx, query, args...)
+	err = row.Scan(&user.ID, &user.Login, &user.Password)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &user, errors.New("user not found")
+		}
+		return &user, err
+	}
+	return &user, nil
 }
 
 func (u *UserRepositroy) CreateUser(ctx context.Context, login, password string) error {
-	sql, _, err := u.Builder.Insert("users").Columns("login", "password").Values(login, password).ToSql()
+	var userExists bool
+	err := u.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE login = $1)", login).Scan(&userExists)
 	if err != nil {
 		return err
 	}
-	_, err = u.Pool.Exec(ctx, sql, login, password)
+	if userExists {
+		return fmt.Errorf("user already exists")
+	}
+
+	query := u.Builder.Insert("users").
+		Columns("login", "password").
+		Values(login, password).Suffix("RETURNING \"id\"")
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+	row := u.Pool.QueryRow(ctx, sql, args...)
+	var userID string
+	err = row.Scan(&userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *UserRepositroy) ChangePassword(ctx context.Context, id, password string) error {
+	sql, args, err := u.Builder.Update("users").
+		Set("password", password).
+		Where(sq.Eq{"id": id}).ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = u.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return err
 	}

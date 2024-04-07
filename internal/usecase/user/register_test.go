@@ -22,6 +22,7 @@ type MockRegisterRepository struct {
 func (m *MockRegisterRepository) CreateUser(ctx context.Context, login, password string) error {
 	args := m.Called(login, password)
 	return args.Error(0)
+
 }
 
 func (m *MockRegisterRepository) GetUser(ctx context.Context, login string) (*entity.User, error) {
@@ -107,7 +108,7 @@ func TestRegisterUC_Register(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := new(MockRegisterRepository)
-			uc := NewRegisterUC(tt.fields.l, r, tt.fields.h)
+			uc := NewRegisterUC(r, tt.fields.h)
 			r.On("GetUser", tt.args.login).Return(tt.args.returnUser, tt.args.dbErr)
 			r.On("CreateUser", tt.args.login, tt.args.password).Return(tt.args.dbErr)
 
@@ -127,33 +128,24 @@ func TestRegisterUC_Register(t *testing.T) {
 }
 
 func TestNewRegisterUC(t *testing.T) {
-	type args struct {
-		l logger.Logger
-		r RegisterRepository
-		h HashFunc
-	}
 	tests := []struct {
 		name string
-		args args
+		l    logger.Logger
+		r    RegisterRepository
+		h    HashFunc
 		want *RegisterUC
 	}{
 		{
 			name: "nil args",
-			args: args{
-				l: nil,
-				r: nil,
-				h: nil,
-			},
-			want: &RegisterUC{
-				l: nil,
-				r: nil,
-				h: nil,
-			},
+			l:    nil,
+			r:    nil,
+			h:    nil,
+			want: &RegisterUC{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewRegisterUC(tt.args.l, tt.args.r, tt.args.h); !reflect.DeepEqual(got, tt.want) {
+			if got := NewRegisterUC(tt.r, tt.h); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewRegisterUC() = %v, want %v", got, tt.want)
 			}
 		})

@@ -4,7 +4,10 @@ import (
 	"GophKeeper-Server/config"
 	v1 "GophKeeper-Server/internal/controller/grpc/v1"
 	pb "GophKeeper-Server/internal/controller/grpc/v1/proto"
+	filesecretcard "GophKeeper-Server/internal/repository/postgres/file_secretcard"
+	"GophKeeper-Server/internal/repository/postgres/secretcard"
 	repouser "GophKeeper-Server/internal/repository/postgres/user"
+	"GophKeeper-Server/internal/usecase"
 	"GophKeeper-Server/internal/usecase/user"
 	"GophKeeper-Server/internal/utils"
 	"GophKeeper-Server/logger"
@@ -21,19 +24,48 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	if err != nil {
 		return err
 	}
-	_, err = pg.Pool.Exec(ctx, "CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY, login text, password text)")
+	_, err = pg.Pool.Exec(ctx, TableUsers)
+	if err != nil {
+		return err
+	}
+	_, err = pg.Pool.Exec(ctx, TableSecretCards)
+	if err != nil {
+		return err
+	}
+	_, err = pg.Pool.Exec(ctx, TableFileSecretCards)
+	if err != nil {
+		return err
+	}
+	_, err = pg.Pool.Exec(ctx, TableMetaSecretCards)
 	if err != nil {
 		return err
 	}
 	ur := repouser.NewUserRepositroy(pg)
-	uc := user.NewRegisterUC(l, ur, utils.HashPassword)
+	ruc := user.NewRegisterUC(ur, utils.HashPassword)
+	guc := user.NewGetUserUC(ur, utils.VerifyPassword)
+	cuc := user.NewChangePasswordUC(ur, utils.HashPassword, utils.VerifyPassword)
+
+	repo := secretcard.NewSecretCardRepository(pg)
+	frepo := filesecretcard.NewFileSecretCardRepository(pg)
+
+	// Инициализация use case
+	useCase := usecase.NewSecretCardUseCase(repo)
+	fuseCase := usecase.NewFileSecretCardUseCase(frepo)
+
+	// Инициализация gRPC-сервера
+	srv := v1.NewSecretCardServiceServer(useCase)
+	fsrv := v1.NewFileSecretCardServer(fuseCase)
+
 	go func() {
 		listen, err := net.Listen("tcp", ":3200")
 		if err != nil {
 			Err = err
 		}
 		s := grpc.NewServer()
-		pb.RegisterUserServiceServer(s, &v1.UserServer{Uc: uc})
+		pb.RegisterUserServiceServer(s, &v1.UserServer{Ruc: ruc, Guc: guc, Cuc: cuc})
+		pb.RegisterSecretCardServiceServer(s, srv)
+		pb.RegisterFileSecretCardServiceServer(s, fsrv)
+
 		if err := s.Serve(listen); err != nil {
 			Err = err
 		}

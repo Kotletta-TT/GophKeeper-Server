@@ -8,13 +8,43 @@ import (
 
 type UserServer struct {
 	pb.UnimplementedUserServiceServer
-	Uc user.Register
+	Ruc user.Register
+	Guc user.GeterUser
+	Cuc user.ChangePassword
 }
 
 func (s *UserServer) CreateUser(
 	ctx context.Context,
-	in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	in *pb.UserRequest) (*pb.CreateUserResponse, error) {
 	var resp pb.CreateUserResponse
-	resp.Error = s.Uc.Register(ctx, in.Login, in.Password).Error()
+	if err := s.Ruc.Register(ctx, in.Login, in.Password); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+func (s *UserServer) GetUser(
+	ctx context.Context,
+	in *pb.UserRequest) (*pb.GetUserResponse, error) {
+	usr, err := s.Guc.GetUser(ctx, in.Login, in.Password)
+	if err != nil {
+		return nil, err
+	}
+	u := pb.UserResponse{
+		Login: usr.Login,
+		Id:    usr.ID.String(),
+	}
+	return &pb.GetUserResponse{
+		User: &u,
+	}, nil
+}
+
+func (s *UserServer) UpdatePassword(
+	ctx context.Context,
+	in *pb.UserUpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	var resp pb.UpdatePasswordResponse
+	if err := s.Cuc.ChangePassword(ctx, in.Login, in.OldPassword, in.NewPassword); err != nil {
+		return nil, err
+	}
 	return &resp, nil
 }
