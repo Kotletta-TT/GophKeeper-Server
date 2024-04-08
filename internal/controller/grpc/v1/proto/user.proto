@@ -33,8 +33,13 @@ message UpdatePasswordResponse {
     string error = 1;
 }
 
+message LoginResponse {
+    string token = 1;
+}
+
 service UserService {
     rpc CreateUser(UserRequest) returns (CreateUserResponse);
     rpc GetUser(UserRequest) returns (GetUserResponse);
     rpc UpdatePassword(UserUpdatePasswordRequest) returns (UpdatePasswordResponse);
+    rpc Login(UserRequest) returns (LoginResponse);
 }

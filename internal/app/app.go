@@ -3,10 +3,13 @@ package app
 import (
 	"GophKeeper-Server/config"
 	v1 "GophKeeper-Server/internal/controller/grpc/v1"
+	"GophKeeper-Server/internal/controller/grpc/v1/interceptors"
 	pb "GophKeeper-Server/internal/controller/grpc/v1/proto"
 	filesecretcard "GophKeeper-Server/internal/repository/postgres/file_secretcard"
+	metasecretcard "GophKeeper-Server/internal/repository/postgres/meta_secretcard"
 	"GophKeeper-Server/internal/repository/postgres/secretcard"
 	repouser "GophKeeper-Server/internal/repository/postgres/user"
+	"GophKeeper-Server/internal/service"
 	"GophKeeper-Server/internal/usecase"
 	"GophKeeper-Server/internal/usecase/user"
 	"GophKeeper-Server/internal/utils"
@@ -47,14 +50,37 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 
 	repo := secretcard.NewSecretCardRepository(pg)
 	frepo := filesecretcard.NewFileSecretCardRepository(pg)
+	mrepo := metasecretcard.NewMetaSecretCardRepository(pg)
 
-	// Инициализация use case
 	useCase := usecase.NewSecretCardUseCase(repo)
 	fuseCase := usecase.NewFileSecretCardUseCase(frepo)
+	museCase := usecase.NewMetaSecretCardUsecase(mrepo)
 
-	// Инициализация gRPC-сервера
 	srv := v1.NewSecretCardServiceServer(useCase)
 	fsrv := v1.NewFileSecretCardServer(fuseCase)
+	msrv := v1.NewMetaSecretCardServer(museCase)
+	authService := service.AuthService{}
+	interceptor := interceptors.AuthInterceptor{
+		AuthService: authService,
+		Methods: map[string]bool{
+			"/SecretCardService.CreateSecretCard":         true,
+			"/SecretCardService.ReadSecretCard":           true,
+			"/SecretCardService.UpdateSecretCard":         true,
+			"/SecretCardService.DeleteSecretCard":         true,
+			"/SecretCardService.ListSecretCard":           true,
+			"/MetaSecretCardService.CreateMetaSecretCard": true,
+			"/MetaSecretCardService.ReadMetaSecretCard":   true,
+			"/MetaSecretCardService.UpdateMetaSecretCard": true,
+			"/MetaSecretCardService.DeleteMetaSecretCard": true,
+			"/MetaSecretCardService.ListMetaSecretCard":   true,
+			"/FileSecretCardService.CreateFileSecretCard": true,
+			"/FileSecretCardService.ReadFileSecretCard":   true,
+			"/FileSecretCardService.UpdateFileSecretCard": true,
+			"/FileSecretCardService.DeleteFileSecretCard": true,
+			"/FileSecretCardService.ListFileSecretCard":   true,
+			"/UserService.CreateUser":                     true,
+			"/UserService.GetUser":                        true},
+	}
 
 	go func() {
 		listen, err := net.Listen("tcp", ":3200")
@@ -62,9 +88,11 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 			Err = err
 		}
 		s := grpc.NewServer()
-		pb.RegisterUserServiceServer(s, &v1.UserServer{Ruc: ruc, Guc: guc, Cuc: cuc})
+		grpc.UnaryInterceptor(interceptor.Unary)
+		pb.RegisterUserServiceServer(s, &v1.UserServer{Ruc: ruc, Guc: guc, Cuc: cuc, AuthService: authService})
 		pb.RegisterSecretCardServiceServer(s, srv)
 		pb.RegisterFileSecretCardServiceServer(s, fsrv)
+		pb.RegisterMetaSecretCardServiceServer(s, msrv)
 
 		if err := s.Serve(listen); err != nil {
 			Err = err

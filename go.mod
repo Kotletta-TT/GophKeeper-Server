@@ -6,6 +6,7 @@ require golang.org/x/sync v0.6.0
 
 require (
 	github.com/doug-martin/goqu/v9 v9.19.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
