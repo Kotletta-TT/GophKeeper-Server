@@ -47,6 +47,8 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	ruc := user.NewRegisterUC(ur, utils.HashPassword)
 	guc := user.NewGetUserUC(ur, utils.VerifyPassword)
 	cuc := user.NewChangePasswordUC(ur, utils.HashPassword, utils.VerifyPassword)
+	aServ := service.AuthService{}
+	usrSrv := v1.NewUserServiceServer(ruc, guc, cuc, aServ)
 
 	repo := secretcard.NewSecretCardRepository(pg)
 	frepo := filesecretcard.NewFileSecretCardRepository(pg)
@@ -55,13 +57,14 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	useCase := usecase.NewSecretCardUseCase(repo)
 	fuseCase := usecase.NewFileSecretCardUseCase(frepo)
 	museCase := usecase.NewMetaSecretCardUsecase(mrepo)
+	suseCase := usecase.NewSyncUsecase(repo, frepo, mrepo)
 
 	srv := v1.NewSecretCardServiceServer(useCase)
 	fsrv := v1.NewFileSecretCardServer(fuseCase)
 	msrv := v1.NewMetaSecretCardServer(museCase)
-	authService := service.AuthService{}
+	ssrv := v1.NewSyncSecretCardServer(suseCase)
 	interceptor := interceptors.AuthInterceptor{
-		AuthService: authService,
+		AuthService: aServ,
 		Methods: map[string]bool{
 			"/SecretCardService.CreateSecretCard":         true,
 			"/SecretCardService.ReadSecretCard":           true,
@@ -79,7 +82,9 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 			"/FileSecretCardService.DeleteFileSecretCard": true,
 			"/FileSecretCardService.ListFileSecretCard":   true,
 			"/UserService.CreateUser":                     true,
-			"/UserService.GetUser":                        true},
+			"/UserService.GetUser":                        true,
+			"/SyncService.Sync":                           true,
+		},
 	}
 
 	go func() {
@@ -89,10 +94,11 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 		}
 		s := grpc.NewServer()
 		grpc.UnaryInterceptor(interceptor.Unary)
-		pb.RegisterUserServiceServer(s, &v1.UserServer{Ruc: ruc, Guc: guc, Cuc: cuc, AuthService: authService})
+		pb.RegisterUserServiceServer(s, usrSrv)
 		pb.RegisterSecretCardServiceServer(s, srv)
 		pb.RegisterFileSecretCardServiceServer(s, fsrv)
 		pb.RegisterMetaSecretCardServiceServer(s, msrv)
+		pb.RegisterSyncServiceServer(s, ssrv)
 
 		if err := s.Serve(listen); err != nil {
 			Err = err

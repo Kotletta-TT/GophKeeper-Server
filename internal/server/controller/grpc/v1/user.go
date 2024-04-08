@@ -15,6 +15,15 @@ type UserServer struct {
 	AuthService service.AuthService
 }
 
+func NewUserServiceServer(ruc user.Register, guc user.GeterUser, cuc user.ChangePassword, authService service.AuthService) *UserServer {
+	return &UserServer{
+		Ruc:         ruc,
+		Guc:         guc,
+		Cuc:         cuc,
+		AuthService: authService,
+	}
+}
+
 func (s *UserServer) CreateUser(
 	ctx context.Context,
 	in *pb.UserRequest) (*pb.CreateUserResponse, error) {

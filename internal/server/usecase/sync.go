@@ -12,12 +12,12 @@ import (
 )
 
 type SyncUsecase struct {
-	CardRepository     secretcard.SecretCardRepository
-	FileCardRepository filesecretcard.FileSecretCardRepository
-	MetaCardRepository metasecretcard.MetaSecretCardRepository
+	CardRepository     *secretcard.SecretCardRepository
+	FileCardRepository *filesecretcard.FileSecretCardRepository
+	MetaCardRepository *metasecretcard.MetaSecretCardRepository
 }
 
-func NewSyncUsecase(cardRepo secretcard.SecretCardRepository, fileRepo filesecretcard.FileSecretCardRepository, metaRepo metasecretcard.MetaSecretCardRepository) *SyncUsecase {
+func NewSyncUsecase(cardRepo *secretcard.SecretCardRepository, fileRepo *filesecretcard.FileSecretCardRepository, metaRepo *metasecretcard.MetaSecretCardRepository) *SyncUsecase {
 	return &SyncUsecase{
 		CardRepository:     cardRepo,
 		FileCardRepository: fileRepo,
