@@ -1,9 +1,10 @@
 package usecase
 
 import (
-	"GophKeeper-Server/internal/entity"
 	"context"
 	"fmt"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
 
 	"github.com/google/uuid"
 )

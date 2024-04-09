@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"GophKeeper-Server/internal/entity"
-	metasecretcard "GophKeeper-Server/internal/repository/postgres/meta_secretcard"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	metasecretcard "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/meta_secretcard"
 	"context"
 	"fmt"
 

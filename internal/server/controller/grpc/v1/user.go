@@ -1,10 +1,11 @@
 package v1
 
 import (
-	pb "GophKeeper-Server/internal/controller/grpc/v1/proto"
-	"GophKeeper-Server/internal/service"
-	"GophKeeper-Server/internal/usecase/user"
 	"context"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/service"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/usecase/user"
+	pb "github.com/Kotletta-TT/GophKeeper/proto"
 )
 
 type UserServer struct {

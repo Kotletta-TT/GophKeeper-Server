@@ -1,9 +1,10 @@
 package logger
 
 import (
-	"GophKeeper-Server/config"
 	"log/slog"
 	"os"
+
+	config "github.com/Kotletta-TT/GophKeeper/config/server"
 )
 
 type Logger interface {

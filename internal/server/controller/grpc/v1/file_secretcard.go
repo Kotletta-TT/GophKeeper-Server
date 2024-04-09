@@ -1,12 +1,13 @@
 package v1
 
 import (
-	"GophKeeper-Server/internal/controller/grpc/v1/proto"
-	"GophKeeper-Server/internal/entity"
 	"context"
 	"fmt"
 
-	uc "GophKeeper-Server/internal/usecase"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	"github.com/Kotletta-TT/GophKeeper/proto"
+
+	uc "github.com/Kotletta-TT/GophKeeper/internal/server/usecase"
 
 	"github.com/google/uuid"
 )

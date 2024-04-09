@@ -1,24 +1,24 @@
 package app
 
 import (
-	"GophKeeper-Server/config"
-	v1 "GophKeeper-Server/internal/controller/grpc/v1"
-	"GophKeeper-Server/internal/controller/grpc/v1/interceptors"
-	pb "GophKeeper-Server/internal/controller/grpc/v1/proto"
-	filesecretcard "GophKeeper-Server/internal/repository/postgres/file_secretcard"
-	metasecretcard "GophKeeper-Server/internal/repository/postgres/meta_secretcard"
-	"GophKeeper-Server/internal/repository/postgres/secretcard"
-	repouser "GophKeeper-Server/internal/repository/postgres/user"
-	"GophKeeper-Server/internal/service"
-	"GophKeeper-Server/internal/usecase"
-	"GophKeeper-Server/internal/usecase/user"
-	"GophKeeper-Server/internal/utils"
-	"GophKeeper-Server/logger"
-	"GophKeeper-Server/pkg/postgres"
+	config "github.com/Kotletta-TT/GophKeeper/config/server"
+	v1 "github.com/Kotletta-TT/GophKeeper/internal/server/controller/grpc/v1"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/controller/grpc/v1/interceptors"
+	filesecretcard "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/file_secretcard"
+	metasecretcard "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/meta_secretcard"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/secretcard"
+	repouser "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/user"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/service"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/usecase"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/usecase/user"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/utils"
+	"github.com/Kotletta-TT/GophKeeper/logger"
+	"github.com/Kotletta-TT/GophKeeper/pkg/postgres"
+	pb "github.com/Kotletta-TT/GophKeeper/proto"
+	"google.golang.org/grpc"
+
 	"context"
 	"net"
-
-	"google.golang.org/grpc"
 )
 
 func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
@@ -66,24 +66,24 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 	interceptor := interceptors.AuthInterceptor{
 		AuthService: aServ,
 		Methods: map[string]bool{
-			"/SecretCardService.CreateSecretCard":         true,
-			"/SecretCardService.ReadSecretCard":           true,
-			"/SecretCardService.UpdateSecretCard":         true,
-			"/SecretCardService.DeleteSecretCard":         true,
-			"/SecretCardService.ListSecretCard":           true,
-			"/MetaSecretCardService.CreateMetaSecretCard": true,
-			"/MetaSecretCardService.ReadMetaSecretCard":   true,
-			"/MetaSecretCardService.UpdateMetaSecretCard": true,
-			"/MetaSecretCardService.DeleteMetaSecretCard": true,
-			"/MetaSecretCardService.ListMetaSecretCard":   true,
-			"/FileSecretCardService.CreateFileSecretCard": true,
-			"/FileSecretCardService.ReadFileSecretCard":   true,
-			"/FileSecretCardService.UpdateFileSecretCard": true,
-			"/FileSecretCardService.DeleteFileSecretCard": true,
-			"/FileSecretCardService.ListFileSecretCard":   true,
-			"/UserService.CreateUser":                     true,
-			"/UserService.GetUser":                        true,
-			"/SyncService.Sync":                           true,
+			"/v1.SecretCardService/CreateSecretCard":         true,
+			"/v1.SecretCardService/ReadSecretCard":           true,
+			"/v1.SecretCardService/UpdateSecretCard":         true,
+			"/v1.SecretCardService/DeleteSecretCard":         true,
+			"/v1.SecretCardService/ListSecretCard":           true,
+			"/v1.MetaSecretCardService/CreateMetaSecretCard": true,
+			"/v1.MetaSecretCardService/ReadMetaSecretCard":   true,
+			"/v1.MetaSecretCardService/UpdateMetaSecretCard": true,
+			"/v1.MetaSecretCardService/DeleteMetaSecretCard": true,
+			"/v1.MetaSecretCardService/ListMetaSecretCard":   true,
+			"/v1.FileSecretCardService/CreateFileSecretCard": true,
+			"/v1.FileSecretCardService/ReadFileSecretCard":   true,
+			"/v1.FileSecretCardService/UpdateFileSecretCard": true,
+			"/v1.FileSecretCardService/DeleteFileSecretCard": true,
+			"/v1.FileSecretCardService/ListFileSecretCard":   true,
+			"/v1.UserService/CreateUser":                     true,
+			"/v1.UserService/GetUser":                        true,
+			"/v1.SyncService/Sync":                           true,
 		},
 	}
 
@@ -92,8 +92,7 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 		if err != nil {
 			Err = err
 		}
-		s := grpc.NewServer()
-		grpc.UnaryInterceptor(interceptor.Unary)
+		s := grpc.NewServer(grpc.UnaryInterceptor(interceptor.Unary))
 		pb.RegisterUserServiceServer(s, usrSrv)
 		pb.RegisterSecretCardServiceServer(s, srv)
 		pb.RegisterFileSecretCardServiceServer(s, fsrv)

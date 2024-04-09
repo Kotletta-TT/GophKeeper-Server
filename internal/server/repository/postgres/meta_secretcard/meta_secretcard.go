@@ -1,10 +1,11 @@
 package metasecretcard
 
 import (
-	"GophKeeper-Server/internal/entity"
-	"GophKeeper-Server/pkg/postgres"
 	"context"
 	"fmt"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	"github.com/Kotletta-TT/GophKeeper/pkg/postgres"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ func (r *MetaSecretCardRepository) Create(ctx context.Context, meta *entity.Meta
 	if err != nil {
 		return fmt.Errorf("failed to build SQL query: %w", err)
 	}
-	
+
 	_, err = r.pg.Pool.Exec(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to execute SQL query: %w", err)

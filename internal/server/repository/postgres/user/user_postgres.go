@@ -1,8 +1,8 @@
 package user
 
 import (
-	"GophKeeper-Server/internal/entity"
-	"GophKeeper-Server/pkg/postgres"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	"github.com/Kotletta-TT/GophKeeper/pkg/postgres"
 	"context"
 	"errors"
 	"fmt"

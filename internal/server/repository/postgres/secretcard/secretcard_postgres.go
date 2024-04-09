@@ -1,11 +1,12 @@
 package secretcard
 
 import (
-	"GophKeeper-Server/internal/entity"
-	"GophKeeper-Server/pkg/postgres"
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	"github.com/Kotletta-TT/GophKeeper/pkg/postgres"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"

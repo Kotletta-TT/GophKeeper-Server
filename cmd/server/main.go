@@ -1,9 +1,6 @@
 package main
 
 import (
-	"GophKeeper-Server/config"
-	"GophKeeper-Server/internal/app"
-	l "GophKeeper-Server/logger"
 	"context"
 	"flag"
 	"log"
@@ -11,6 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	config "github.com/Kotletta-TT/GophKeeper/config/server"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/app"
+	l "github.com/Kotletta-TT/GophKeeper/logger"
 	"golang.org/x/sync/errgroup"
 )
 

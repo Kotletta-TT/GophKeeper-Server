@@ -1,8 +1,9 @@
 package interceptors
 
 import (
-	"GophKeeper-Server/internal/service"
 	"context"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/service"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

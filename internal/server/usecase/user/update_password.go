@@ -1,8 +1,9 @@
 package user
 
 import (
-	"GophKeeper-Server/internal/entity"
 	"context"
+
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
 )
 
 type ChangePassword interface {

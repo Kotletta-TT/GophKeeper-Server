@@ -1,16 +1,16 @@
 package user
 
 import (
-	"GophKeeper-Server/config"
-	"GophKeeper-Server/internal/entity"
-	customErrs "GophKeeper-Server/internal/errors"
-	"GophKeeper-Server/logger"
 	"context"
 	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
+	config "github.com/Kotletta-TT/GophKeeper/config/server"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	customErrs "github.com/Kotletta-TT/GophKeeper/internal/server/errors"
+	"github.com/Kotletta-TT/GophKeeper/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"GophKeeper-Server/logger"
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/Kotletta-TT/GophKeeper/logger"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"

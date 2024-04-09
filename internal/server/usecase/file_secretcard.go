@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"GophKeeper-Server/internal/entity"
-	repository "GophKeeper-Server/internal/repository/postgres/file_secretcard"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	repository "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/file_secretcard"
 	"context"
 
 	"github.com/google/uuid"

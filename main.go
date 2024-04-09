@@ -96,6 +96,7 @@ func main() {
 		SetButtonsAlign(tview.AlignCenter)
 	pages.AddPage("Input", form, true, true)
 	pages.AddPage("List", list, true, true)
+	
 	if err := app.SetRoot(form, true).SetFocus(form).Run(); err != nil {
 		panic(err)
 	}

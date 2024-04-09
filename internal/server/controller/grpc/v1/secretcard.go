@@ -1,9 +1,9 @@
 package v1
 
 import (
-	pb "GophKeeper-Server/internal/controller/grpc/v1/proto"
-	"GophKeeper-Server/internal/entity"
-	"GophKeeper-Server/internal/usecase"
+	pb "github.com/Kotletta-TT/GophKeeper/proto"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/usecase"
 	"context"
 	"fmt"
 

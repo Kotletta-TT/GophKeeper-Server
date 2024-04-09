@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 
-	"GophKeeper-Server/internal/entity"
-	filesecretcard "GophKeeper-Server/internal/repository/postgres/file_secretcard"
-	metasecretcard "GophKeeper-Server/internal/repository/postgres/meta_secretcard"
-	"GophKeeper-Server/internal/repository/postgres/secretcard"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/entity"
+	filesecretcard "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/file_secretcard"
+	metasecretcard "github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/meta_secretcard"
+	"github.com/Kotletta-TT/GophKeeper/internal/server/repository/postgres/secretcard"
 
 	"github.com/google/uuid"
 )
