@@ -1,4 +1,0 @@
-listen: ":8866"
-transport: "grpc" # http
-db: "in-memory" # postgres
-registration: true # false

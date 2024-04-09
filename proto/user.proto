@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "v1/proto";
+
+
+message UserResponse {
+    string id = 1;
+    string login = 2;
+}
+
+message GetUserResponse {
+    UserResponse user = 1;
+}
+
+message CreateUserResponse {
+    string error = 1;
+}
+
+message UserRequest {
+    string login = 1;
+    string password = 2;
+}
+
+message UserUpdatePasswordRequest {
+    string login = 1;
+    string oldPassword = 2;
+    string newPassword = 3;
+}
+
+message UpdatePasswordResponse {
+    string error = 1;
+}
+
+message LoginResponse {
+    string token = 1;
+    string user_id = 2;
+}
+
+service UserService {
+    rpc CreateUser(UserRequest) returns (CreateUserResponse);
+    rpc GetUser(UserRequest) returns (GetUserResponse);
+    rpc UpdatePassword(UserUpdatePasswordRequest) returns (UpdatePasswordResponse);
+    rpc Login(UserRequest) returns (LoginResponse);
+}

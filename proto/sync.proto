@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "v1/proto";
+
+import "secretcard.proto";
+
+message SyncSecretCard {
+    SecretCard secret_card = 1;
+    repeated FileSecretCard file_secret_card = 2;
+    repeated MetaSecretCard meta_secret_card = 3;
+}
+
+message SyncRequest {
+    string user_id = 1;
+    repeated SyncSecretCard secret_cards = 2;
+}
+
+message SyncResponse {
+    repeated SyncSecretCard secret_cards = 2;
+}
+
+service SyncService {
+    rpc Sync(SyncRequest) returns (SyncResponse);
+}
