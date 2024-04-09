@@ -26,15 +26,16 @@ func main() {
 	defer conn.Close()
 	c := proto.NewUserServiceClient(conn)
 	sc := proto.NewSecretCardServiceClient(conn)
+	fc := proto.NewFileSecretCardServiceClient(conn)
 
-	var token string
+	var token, usrID string
 
 	app := tview.NewApplication()
 	pages := tview.NewPages()
 	rv := view.NewRegisterView(c, app, pages)
 	iv := view.NewInitialView(c, app, pages)
-	lv := view.NewLoginView(c, app, pages, &token)
-	cv := view.NewCardView(sc, app, pages, &token)
+	lv := view.NewLoginView(c, app, pages, &token, &usrID)
+	cv := view.NewCardView(sc, app, pages, &token, &usrID, fc)
 	// clv := view.NewCardListView(sc, app, pages)
 
 	v := view.NewView(rv, iv, lv, cv)

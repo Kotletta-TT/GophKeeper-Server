@@ -13,14 +13,16 @@ type LoginView struct {
 	api   proto.UserServiceClient
 	form  *tview.Form
 	token *string
+	usrID *string
 }
 
-func NewLoginView(client proto.UserServiceClient, app *tview.Application, pages *tview.Pages, token *string) *LoginView {
+func NewLoginView(client proto.UserServiceClient, app *tview.Application, pages *tview.Pages, token, uId *string) *LoginView {
 	l := &LoginView{
 		api:   client,
 		app:   app,
 		pages: pages,
 		token: token,
+		usrID: uId,
 	}
 	l.NewLoginForm()
 	return l
@@ -51,6 +53,7 @@ func (l *LoginView) NewLoginForm() {
 				l.pages.SwitchToPage("Modal")
 			} else {
 				*l.token = resp.Token
+				*l.usrID = resp.UserId
 				modal = tview.NewModal().SetText(resp.Token).AddButtons([]string{"OK"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 					l.pages.RemovePage("Modal")
 					l.pages.SwitchToPage("Card")

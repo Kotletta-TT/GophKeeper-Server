@@ -27,8 +27,8 @@ func NewFileSecretCardRepository(pg *postgres.Postgres) *FileSecretCardRepositor
 // Create создает новую запись файла секретной карты.
 func (r *FileSecretCardRepository) Create(ctx context.Context, file *entity.FileSecretCard) error {
 	query, args, err := r.pg.Builder.Insert("file_secret_cards").
-		Columns("id", "card_id", "file").
-		Values(file.ID, file.CardId, file.File).ToSql()
+		Columns("card_id", "file").
+		Values(file.CardId, file.File).ToSql()
 	if err != nil {
 		return fmt.Errorf("failed to build SQL query: %w", err)
 	}

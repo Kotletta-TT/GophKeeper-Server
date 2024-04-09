@@ -81,7 +81,6 @@ func Run(ctx context.Context, cfg *config.Config, l logger.Logger) error {
 			"/v1.FileSecretCardService/UpdateFileSecretCard": true,
 			"/v1.FileSecretCardService/DeleteFileSecretCard": true,
 			"/v1.FileSecretCardService/ListFileSecretCard":   true,
-			"/v1.UserService/CreateUser":                     true,
 			"/v1.UserService/GetUser":                        true,
 			"/v1.SyncService/Sync":                           true,
 		},

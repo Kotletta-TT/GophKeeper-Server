@@ -11,16 +11,18 @@ type CardView struct {
 	pages *tview.Pages
 	api   proto.SecretCardServiceClient
 	token *string
+	usrID *string
 	ccv   *CreateCardView
 }
 
-func NewCardView(card proto.SecretCardServiceClient, app *tview.Application, pages *tview.Pages, token *string) *CardView {
+func NewCardView(card proto.SecretCardServiceClient, app *tview.Application, pages *tview.Pages, token, uID *string, fApi proto.FileSecretCardServiceClient) *CardView {
 	cv := &CardView{
 		api:   card,
 		app:   app,
 		pages: pages,
 		token: token,
-		ccv:   NewCreateCardView(app, pages, card, token),
+		usrID: uID,
+		ccv:   NewCreateCardView(app, pages, card, fApi, token, uID),
 	}
 	cv.InitializeList()
 	return cv

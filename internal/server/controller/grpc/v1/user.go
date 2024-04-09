@@ -74,5 +74,6 @@ func (s *UserServer) Login(
 		return nil, err
 	}
 	resp.Token = token
+	resp.UserId = usr.ID.String()
 	return &resp, nil
 }
